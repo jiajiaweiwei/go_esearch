@@ -39,6 +39,7 @@ go test -bench= -run=^$ -count=1 -benchmem -benchtime=3s
 
 */
 var myMap = inverted.NewConcurrentHashMap(8, 1000)
+var myMapV2 = inverted.NewConcurrentHashMapV2(8, 1000)
 var syncMap = sync.Map{}
 
 func BenchmarkMyMap(b *testing.B) {
@@ -59,6 +60,30 @@ func BenchmarkMyMap(b *testing.B) {
 				wg.Add(1)
 				defer wg.Done()
 				writeMyMap()
+			}()
+		}
+		wg.Wait()
+	}
+}
+
+func BenchmarkMyMapV2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		const P = 300
+		var wg sync.WaitGroup
+		// 并发读
+		for i := 0; i < P; i++ {
+			go func() {
+				wg.Add(1)
+				defer wg.Done()
+				readMyMapV2()
+			}()
+		}
+		// 并发写
+		for i := 0; i < P; i++ {
+			go func() {
+				wg.Add(1)
+				defer wg.Done()
+				writeMyMapV2()
 			}()
 		}
 		wg.Wait()
@@ -99,6 +124,19 @@ func readMyMap() {
 func writeMyMap() {
 	for i := 0; i < 10000; i++ {
 		myMap.Store(strconv.Itoa(int(rand.Int63())), "")
+	}
+}
+
+// 自定义线程安全的mapV2
+func readMyMapV2() {
+	for i := 0; i < 10000; i++ {
+		myMapV2.Load(strconv.Itoa(int(rand.Int63())))
+	}
+}
+
+func writeMyMapV2() {
+	for i := 0; i < 10000; i++ {
+		myMapV2.Store(strconv.Itoa(int(rand.Int63())), "")
 	}
 }
 
