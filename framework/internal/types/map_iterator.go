@@ -1,6 +1,6 @@
 package types
 
-// MapEntry ConcurrentHashMap中的一个<key, val>键值对
+// MapEntry PartitionedRWMutexMap<key, val>键值对
 type MapEntry struct {
 	Key   string // 键
 	Value any    // 值
@@ -12,19 +12,19 @@ type MapIterator interface {
 	Next() *MapEntry
 }
 
-// ConcurrentHashMapIterator 实现了 MapIterator 接口，提供了对 ConcurrentHashMap 的迭代功能
-type ConcurrentHashMapIterator struct {
-	cm       *ConcurrentHashMap // 目标 ConcurrentHashMap
-	keys     [][]string         // 固定所有 keys 为有序状态
-	rowIndex int                // 当前行索引
-	colIndex int                // 当前列索引
+// PartitionedRWMutexMapIterator 实现了 MapIterator 接口，提供了对 ConcurrentHashMap 的迭代功能
+type PartitionedRWMutexMapIterator struct {
+	cm       *PartitionedRWMutexMap // 目标 ConcurrentHashMap
+	keys     [][]string             // 固定所有 keys 为有序状态
+	rowIndex int                    // 当前行索引
+	colIndex int                    // 当前列索引
 }
 
 // Next 获取 ConcurrentHashMap 中的下一个 <key, val> 键值对
 //
 // 返回值:
 //   - *MapEntry: 包含当前键值对的 MapEntry 对象。如果迭代器已经遍历完所有键值对，则返回 nil。
-func (iter *ConcurrentHashMapIterator) Next() *MapEntry {
+func (iter *PartitionedRWMutexMapIterator) Next() *MapEntry {
 	// 行号越界，Next不存在，直接返回
 	if iter.rowIndex >= len(iter.keys) {
 		return nil

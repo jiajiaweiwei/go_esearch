@@ -1,4 +1,4 @@
-package types
+package inverted
 
 // 有序链表求交集 这里直接用切片代表有序链表
 
